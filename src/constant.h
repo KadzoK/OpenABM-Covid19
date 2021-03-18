@@ -149,6 +149,17 @@ enum HOUSEHOLD_SIZE{
 	HH_4,
 	HH_5,
 	HH_6,
+	HH_7,
+	HH_8,
+	HH_9,
+	HH_10,
+	HH_11,
+	HH_12,
+	HH_13,
+	HH_14,
+	HH_15,
+	HH_16,
+	HH_17,
 	N_HOUSEHOLD_MAX
 };
 
