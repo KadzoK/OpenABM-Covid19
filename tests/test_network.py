@@ -120,7 +120,7 @@ class TestClass(object):
                 sd_random_interactions_adult     = 7,
                 mean_random_interactions_elderly = 6,
                 sd_random_interactions_elderly   = 6,
-                n_total                          = 10000
+                n_total                          = 30000
 
             ),
         ],
@@ -237,7 +237,7 @@ class TestClass(object):
             dict(
                 test_params = dict(
                     n_total = 10000,
-                    end_time = 15,
+                    end_time = 5,
                     mean_work_interactions_child   = 12,
                     mean_work_interactions_adult   = 5,
                     mean_work_interactions_elderly = 4,
@@ -248,7 +248,7 @@ class TestClass(object):
             dict(
                 test_params = dict(
                     n_total = 10000,
-                    end_time = 15,
+                    end_time = 5,
                     mean_work_interactions_child   = 10,
                     mean_work_interactions_adult   = 7,
                     mean_work_interactions_elderly = 3,
@@ -324,7 +324,7 @@ class TestClass(object):
             ),
             dict(
                 test_params = dict(
-                    n_total = 80,
+                    n_total = 300,
                     end_time = 15,
                     mean_work_interactions_child   = 6,
                     mean_work_interactions_adult   = 12,
@@ -335,7 +335,7 @@ class TestClass(object):
             ),
             dict(
                 test_params = dict(
-                    n_total = 50,
+                    n_total = 200,
                     end_time = 15,
                     mean_work_interactions_child   = 6,
                     mean_work_interactions_adult   = 12,
@@ -346,7 +346,7 @@ class TestClass(object):
             ),
             dict(
                 test_params = dict(
-                    n_total = 30,
+                    n_total = 150,
                     end_time = 15,
                     mean_work_interactions_child   = 6,
                     mean_work_interactions_adult   = 12,
@@ -508,6 +508,7 @@ class TestClass(object):
       
         # absoluta tolerance
         tolerance = 0.03
+        sd_tolerance = 0.06
         
         # note when counting connections we count each end
         ageTypeMap = pd.DataFrame( data={
@@ -551,20 +552,21 @@ class TestClass(object):
         # check mean and 
         mean = df_int[df_int["age_type"] == constant.CHILD].loc[:,"connections"].mean()
         sd   = df_int[df_int["age_type"] == constant.CHILD].loc[:,"connections"].std()    
+        np.testing.assert_allclose( mean, mean_random_interactions_child, rtol = tolerance )
         if mean_random_interactions_child > 0:
-            np.testing.assert_allclose( sd,     sd_random_interactions_child, rtol = tolerance )
+            np.testing.assert_allclose( sd,     sd_random_interactions_child, rtol = sd_tolerance )
         
         mean = df_int[df_int["age_type"] == constant.ADULT].loc[:,"connections"].mean()
         sd   = df_int[df_int["age_type"] == constant.ADULT].loc[:,"connections"].std()        
         np.testing.assert_allclose( mean, mean_random_interactions_adult, rtol = tolerance )
         if mean_random_interactions_adult > 0:
-            np.testing.assert_allclose( sd,   sd_random_interactions_adult, rtol = tolerance )
+            np.testing.assert_allclose( sd,   sd_random_interactions_adult, rtol = sd_tolerance )
         
         mean = df_int[df_int["age_type"] == constant.ELDERLY].loc[:,"connections"].mean()
         sd   = df_int[df_int["age_type"] == constant.ELDERLY].loc[:,"connections"].std()        
         np.testing.assert_allclose( mean, mean_random_interactions_elderly, rtol = tolerance )
         if mean_random_interactions_elderly > 0:
-            np.testing.assert_allclose( sd,   sd_random_interactions_elderly, rtol = tolerance )
+            np.testing.assert_allclose( sd,   sd_random_interactions_elderly, rtol = sd_tolerance )
   
     def test_occupation_network( 
             self,
@@ -888,7 +890,6 @@ class TestClass(object):
 
         lockdown_multiplier = np.ones(10) * 0.2
 
-        network_id = np.arange(10)
         network_name = ['primary', 'secondary', 'adult_1', 'adult_2', 'adult_3', 'adult_4',
                         'adult_5', 'adult_6', 'elderly_1', 'elderly_2']
 
@@ -898,7 +899,6 @@ class TestClass(object):
             'age_type': age_type,
             'mean_work_interaction': mean_work_interaction,
             'lockdown_multiplier': lockdown_multiplier,
-            'network_id': network_id,
             'network_name': network_name})
 
         params = utils.get_params_swig()
@@ -1025,6 +1025,9 @@ class TestClass(object):
             mean_conn - mean number of connections for someone on the network
         """
         
+        # set the np seed so the results are reproducible
+        np.random.seed(0)
+        
         # set up test model
         params = utils.get_params_swig()
         for param, value in test_params.items():
@@ -1082,8 +1085,6 @@ class TestClass(object):
     
     def test_get_network(self):
 
-        network_id = 0
-
         # Set up test model
         params = utils.get_params_swig()
         model = utils.get_model_swig( params )
@@ -1092,6 +1093,10 @@ class TestClass(object):
         # Write network to file
         model.write_household_network()
         df_network_written = pd.read_csv(constant.TEST_HOUSEHOLD_NETWORK_FILE)
+
+        # get the network_id for the household table from the info
+        network_info = model.get_network_info()
+        network_id = network_info[ network_info[ "type"] == constant.HOUSEHOLD ].iloc[0]["id"]
 
         # Return network as a dataframe
         network = model.get_network_by_id( network_id )
@@ -1122,7 +1127,7 @@ class TestClass(object):
         inter_initial = pd.read_csv(constant.TEST_INTERACTION_FILE)
         
         # run to the end
-        model.run()
+        model.run( verbose = False )
         model.write_interactions_file() 
         model.write_transmissions()  
         inter_final   = pd.read_csv(constant.TEST_INTERACTION_FILE)

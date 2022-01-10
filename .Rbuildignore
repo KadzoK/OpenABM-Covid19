@@ -7,6 +7,10 @@
 ^.*\.Rproj$
 ^.*\.Rcheck$
 
+# Emacs / Vim files
+TAGS$
+tags$
+
 # SWIG interface files
 .*\.i$
 
@@ -51,3 +55,4 @@
 ^documentation$
 ^src\/Makefile$
 ^src\/main\.c$
+^R\MetaModelUtils\*

@@ -117,8 +117,9 @@ typedef struct{
 	double quarantine_dropout_traced_positive;	// daily dropout rate if contact-traced rom a index case with a positive test
 	double quarantine_dropout_positive;     	// daily dropout rate if receive positive test result
 
-	double quarantine_compliance_traced_symptoms; // probability that someone complies with a amber quarantine message
-	double quarantine_compliance_traced_positive; // probability that someone complies with a red quarantine message
+	double quarantine_compliance_positive;		  // probability that someone quarantines after a positive test
+	double quarantine_compliance_traced_symptoms; // probability that someone complies with a amber quarantine message (symptomaitc index case)
+	double quarantine_compliance_traced_positive; // probability that someone complies with a red quarantine message (positive test index case)
 
 	int quarantine_on_traced;				// immediately quarantine those who are contact traced
 	int quarantine_smart_release_day;		// number of days until smart release on no contacts
@@ -141,6 +142,10 @@ typedef struct{
 	int test_result_wait_priority;			// number of days to wait for a priority test result
 	int test_order_wait_priority;			// minimum number of days to wait for a priority test to be taken
 	int test_release_on_negative;			// release on a negative test result
+
+	double test_on_symptoms_compliance;        // Fraction of individuals who get tested on symptoms if test_on_symptoms=TRUE
+	double test_on_traced_symptoms_compliance; // Fraction of individuals who get tested on traced from symptomatic case if test_on_compliance=TRUE
+	double test_on_traced_positive_compliance; // Fraction of individuals who get tested on traced from positive case if test_on_compliance=TRUE
 
 	int priority_test_contacts[N_AGE_GROUPS];      // number of contacts that triggers priority test
 
@@ -198,6 +203,9 @@ typedef struct{
 	//average amount of interactions healthcare workers have with each other per day
 	double hcw_mean_work_interactions;
 
+	// maximum number of strains allowed
+	int max_n_strains;
+
 } parameters;
 
 /************************************************************************/
@@ -207,6 +215,10 @@ int get_model_param_hospital_on(model *pmodel);
 double get_model_param_daily_fraction_work_used(model *pmodel, int idx);
 int get_model_param_quarantine_days(model *pmodel);
 double get_model_param_self_quarantine_fraction(model *pmodel);
+double get_model_param_test_on_symptoms_compliance(model *pmodel);
+double get_model_param_test_on_traced_symptoms_compliance(model *pmodel);
+double get_model_param_test_on_traced_positive_compliance(model *pmodel);
+double get_model_param_quarantine_compliance_positive(model *pmodel);
 int get_model_param_trace_on_symptoms(model *pmodel);
 int get_model_param_trace_on_positive(model *pmodel);
 int get_model_param_quarantine_on_traced(model *pmodel);
@@ -249,6 +261,10 @@ double get_model_param_fatality_fraction( model *pmodel, int age_group );
 
 int set_model_param_quarantine_days(model *pmodel, int value);
 int set_model_param_self_quarantine_fraction(model *pmodel, double value);
+int set_model_param_test_on_symptoms_compliance(model *pmodel, double value);
+int set_model_param_test_on_traced_symptoms_compliance(model *pmodel, double value);
+int set_model_param_test_on_traced_positive_compliance(model *pmodel, double value);
+int set_model_param_quarantine_compliance_positive(model *pmodel, double value);
 int set_model_param_trace_on_symptoms(model *pmodel, int value);
 int set_model_param_trace_on_positive(model *pmodel, int value);
 int set_model_param_quarantine_on_traced(model *pmodel, int value);
@@ -293,7 +309,7 @@ int set_model_param_fatality_fraction( model *pmodel, double value, int age_grou
 
 int set_demographic_house_table( parameters*, long, long, long*, long*, long* );
 int set_occupation_network_table( parameters* params,  long n_total, long n_networks );
-int set_indiv_occupation_network_property( parameters* params, long network, int age_type, double mean_interaction, double lockdown_multiplier, long network_id, const char *network_name );
+int set_indiv_occupation_network_property( parameters* params, long network, int age_type, double mean_interaction, double lockdown_multiplier, const char *network_name );
 int set_indiv_occupation_network( parameters* params, long n_total, long *people, long *network );
 void set_up_default_occupation_network_table( parameters *params );
 

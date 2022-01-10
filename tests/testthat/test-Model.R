@@ -69,19 +69,15 @@ test_that("Model::baseline_params", {
   # TODO(olegat) test get_network_info()
   # TODO(olegat) test delete_network()
 
-  nw <- m$get_network_by_id(3)
-  expect_equal( 3, nw$network_id() )
+  nw <- m$get_network_by_id(4)
+  expect_equal( 4, nw$network_id() )
   expect_equal( 'Occupation working network (default)', nw$name() )
-  expect_equal( 3916906, nw$n_edges() )
-  expect_equal( 559558, nw$n_vertices() )
   expect_equal( 1, nw$skip_hospitalised() )
   expect_equal( 1, nw$skip_quarantined() )
   expect_equal( 1, nw$type() )
   expect_equal( 0.5, nw$daily_fraction() )
 
-  expect_equal(NA, m$get_network_ids(0))
-  expect_equal(c(0,1,2,3,4,5,6), m$get_network_ids(3))
-  expect_equal(c(0,1,2,3,4,5,6), m$get_network_ids(100))
+  expect_equal(c(0,1,2,3,4,5,6), m$get_network_ids())
 
   df_app_user <- m$get_app_users()
   df_app_user[['app_user']] <- as.integer(!df_app_user[['app_user']])
@@ -89,10 +85,10 @@ test_that("Model::baseline_params", {
   expect_equal(df_app_user, m$get_app_users())
 
 
-
   ##
   ## Begin rudimentary integration test with Simulation and COVID19IBM:
   ##
+
 
   ## 1) Check initial state at time = 0
   result_t0 <- c(
@@ -100,15 +96,15 @@ test_that("Model::baseline_params", {
     'lockdown' = 0,
     'test_on_symptoms' = 0,
     'app_turned_on' = 0,
-    'total_infected' = 5,
-    'total_infected_0_9' = 0,
-    'total_infected_10_19' = 0,
-    'total_infected_20_29' = 1,
+    'total_infected' = 10,
+    'total_infected_0_9' = 1,
+    'total_infected_10_19' = 1,
+    'total_infected_20_29' = 3,
     'total_infected_30_39' = 1,
     'total_infected_40_49' = 0,
     'total_infected_50_59' = 1,
     'total_infected_60_69' = 0,
-    'total_infected_70_79' = 1,
+    'total_infected_70_79' = 2,
     'total_infected_80' = 1,
     'total_case' = 0,
     'total_case_0_9' = 0,
@@ -140,8 +136,8 @@ test_that("Model::baseline_params", {
     'daily_death_60_69' = 0,
     'daily_death_70_79' = 0,
     'daily_death_80' = 0,
-    'n_presymptom' = 2,
-    'n_asymptom' = 3,
+    'n_presymptom' = 5,
+    'n_asymptom' = 5,
     'n_quarantine' = 0,
     'n_tests' = 0,
     'n_symptoms' = 0,
@@ -181,14 +177,14 @@ test_that("Model::baseline_params", {
     'lockdown' = 0,
     'test_on_symptoms' = 0,
     'app_turned_on' = 0,
-    'total_infected' = 13,
-    'total_infected_0_9' = 0,
-    'total_infected_10_19' = 0,
-    'total_infected_20_29' = 2,
+    'total_infected' = 18,
+    'total_infected_0_9' = 1,
+    'total_infected_10_19' = 1,
+    'total_infected_20_29' = 3,
     'total_infected_30_39' = 2,
-    'total_infected_40_49' = 0,
+    'total_infected_40_49' = 1,
     'total_infected_50_59' = 3,
-    'total_infected_60_69' = 2,
+    'total_infected_60_69' = 3,
     'total_infected_70_79' = 2,
     'total_infected_80' = 2,
     'total_case' = 0,
@@ -221,11 +217,11 @@ test_that("Model::baseline_params", {
     'daily_death_60_69' = 0,
     'daily_death_70_79' = 0,
     'daily_death_80' = 0,
-    'n_presymptom' = 7,
-    'n_asymptom' = 5,
+    'n_presymptom' = 10,
+    'n_asymptom' = 6,
     'n_quarantine' = 0,
     'n_tests' = 0,
-    'n_symptoms' = 1,
+    'n_symptoms' = 2,
     'n_hospital' = 0,
     'n_hospitalised_recovering' = 0,
     'n_critical' = 0,
@@ -254,16 +250,16 @@ test_that("Model::baseline_params", {
   results_expected$lockdown <- c(0, 0, 0)
   results_expected$test_on_symptoms <- c(0, 0, 0)
   results_expected$app_turned_on <- c(0, 0, 0)
-  results_expected$total_infected <- c( 6,  7, 13)
-  results_expected$total_infected_0_9 <- c(0, 0, 0)
-  results_expected$total_infected_10_19 <- c(0, 0, 0)
-  results_expected$total_infected_20_29 <- c(1, 1, 2)
+  results_expected$total_infected <- c(10, 10, 18)
+  results_expected$total_infected_0_9 <- c(1, 1, 1)
+  results_expected$total_infected_10_19 <- c(1, 1, 1)
+  results_expected$total_infected_20_29 <- c(3, 3, 3)
   results_expected$total_infected_30_39 <- c(1, 1, 2)
-  results_expected$total_infected_40_49 <- c(0, 0, 0)
+  results_expected$total_infected_40_49 <- c(0, 0, 1)
   results_expected$total_infected_50_59 <- c(1, 1, 3)
-  results_expected$total_infected_60_69 <- c(1, 1, 2)
-  results_expected$total_infected_70_79 <- c(1, 1, 2)
-  results_expected$total_infected_80 <- c(1, 2, 2)
+  results_expected$total_infected_60_69 <- c(0, 0, 3)
+  results_expected$total_infected_70_79 <- c(2, 2, 2)
+  results_expected$total_infected_80 <- c(1, 1, 2)
   results_expected$total_case <- c(0, 0, 0)
   results_expected$total_case_0_9 <- c(0, 0, 0)
   results_expected$total_case_10_19 <- c(0, 0, 0)
@@ -294,11 +290,11 @@ test_that("Model::baseline_params", {
   results_expected$daily_death_60_69 <- c(0, 0, 0)
   results_expected$daily_death_70_79 <- c(0, 0, 0)
   results_expected$daily_death_80 <- c(0, 0, 0)
-  results_expected$n_presymptom <- c(3, 3, 7)
-  results_expected$n_asymptom <- c(3, 3, 5)
+  results_expected$n_presymptom <- c(5, 4, 10)
+  results_expected$n_asymptom <- c(5, 5, 6)
   results_expected$n_quarantine <- c(0, 0, 0)
   results_expected$n_tests <- c(0, 0, 0)
-  results_expected$n_symptoms <- c(0, 1, 1)
+  results_expected$n_symptoms <- c(0, 1, 2)
   results_expected$n_hospital <- c(0, 0, 0)
   results_expected$n_hospitalised_recovering <- c(0, 0, 0)
   results_expected$n_critical <- c(0, 0, 0)
@@ -323,50 +319,62 @@ test_that("Model::baseline_params", {
   expect_equal(sim$results, results_expected)
 
   # test infections / vaccinations.
+  vaccine = m$add_vaccine( full_efficacy = 0.6, symptoms_efficacy = 0.8, severe_efficacy = 0.95 )
   expect_true(m$seed_infect_by_idx(0))
-  expect_true(m$vaccinate_individual(2))
-  expect_false(m$vaccinate_schedule(VaccineSchedule$new()))
+  expect_equal(m$vaccinate_schedule(VaccineSchedule$new( vaccine = vaccine)), 0 )
+  expect_true(m$vaccinate_individual(2, vaccine))
 })
 
 test_that("Model::default params", {
   m = Model.new( params = list( n_total = 10000,
                                 end_time = 10,
                                 n_seed_infection = 5 ))
+
+  if(.Machine$sizeof.pointer < 8) { # skip this test in 32-bit
+    expect_true(is.null(m))
+    return();
+  }
   Model.run( m, verbose = FALSE  )
   res = Model.results( m )
 
-  expect_equal( res$time[ 10 ], 10 )
-  expect_gt( res$total_infected[ 10 ], 10 )
+  expect_equal( res$time[ 11 ], 10 )
+  expect_gt( res$total_infected[ 11 ], 10 )
 })
 
 test_that("Model::multiple models", {
   # create one model
   m1 = Model.new( params = list( n_total = 10000, end_time = 10 ) )
-  m1$one_time_step()
 
   # create a second modek
   m2 = Model.new( params = list( n_total = 10000,
                                  end_time = 10,
                                  n_seed_infection = 5 ))
+
+  if(.Machine$sizeof.pointer < 8) { # skip this test in 32-bit
+    expect_true(is.null(m1))
+    expect_true(is.null(m2))
+    return();
+  }
+  m1$one_time_step()
   m2$one_time_step()
 
   # run the first model again and destroy (force garbage collection)
   Model.run( m1, verbose = FALSE  )
   res = Model.results( m1 )
-  expect_equal( res$time[ 10 ], 10 )
+  expect_equal( res$time[ 11 ], 10 )
   rm( m1 ); gc()
 
   # run the second  model again and destroy
   Model.run( m2, verbose = FALSE  )
   res = Model.results( m2 )
-  expect_equal( res$time[ 10 ], 10 )
+  expect_equal( res$time[ 11 ], 10 )
   rm( m2 );
 
   # create a third model and run
   m3 = Model.new( params = list( n_total = 10000, end_time = 10 ) )
   Model.run( m3, verbose = FALSE  )
   res = Model.results( m3 )
-  expect_equal( res$time[ 10 ], 10 )
+  expect_equal( res$time[ 11 ], 10 )
   rm( m3 ); gc()
 })
 

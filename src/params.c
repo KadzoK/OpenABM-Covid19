@@ -82,7 +82,7 @@ int set_demographic_house_table(
 		}
 		if( (house_nos[pdx] < 0) | (house_nos[pdx] >= params->demo_house->n_households) )
 		{
-			print_now( "The person's nouse_no must be between 0 and n_households" );
+			print_now( "The person's house_no must be between 0 and n_households" );
 			return FALSE;
 		}
 
@@ -228,7 +228,6 @@ int set_indiv_occupation_network_property(
 	int age_type,
 	double mean_interaction,
 	double lockdown_multiplier,
-	long network_id,
 	const char *network_name
 )
 {
@@ -237,7 +236,6 @@ int set_indiv_occupation_network_property(
 	table->age_type[network]                        = age_type;
     table->mean_interactions[network]               = mean_interaction;
     table->lockdown_occupation_multipliers[network] = lockdown_multiplier;
-    table->network_ids[network]                     = network_id;
 
     if( strlen( network_name ) < 128 )
     {
@@ -268,7 +266,6 @@ int set_occupation_network_table(
 	params->occupation_network_table->age_type = calloc( n_networks, sizeof(int) );
 	params->occupation_network_table->mean_interactions = calloc( n_networks, sizeof(double) );
 	params->occupation_network_table->lockdown_occupation_multipliers = calloc( n_networks, sizeof(double) );
-	params->occupation_network_table->network_ids = calloc( n_networks, sizeof(long) );
 
 	params->occupation_network_table->network_names = calloc( n_networks, sizeof(char *) );
     for( int i = 0; i != n_networks; ++i )
@@ -325,7 +322,6 @@ void set_up_default_occupation_network_table( parameters *params )
         set_indiv_occupation_network_property( params, network, NETWORK_TYPE_MAP[network],
                                                params->mean_work_interactions[NETWORK_TYPE_MAP[network]],
                                                params->lockdown_occupation_multiplier[network],
-                                               OCCUPATION_DEFAULT_MAP[network],
                                                DEFAULT_NETWORKS_NAMES[OCCUPATION_DEFAULT_MAP[network]] );
     }
 }
@@ -384,6 +380,42 @@ int get_model_param_quarantine_days(model *model)
 double get_model_param_self_quarantine_fraction(model *model)
 {
     return model->params->self_quarantine_fraction;
+}
+
+/*****************************************************************************************
+*  Name:		get_model_param_test_on_symptoms_compliance
+*  Description: Gets the value of an int parameter
+******************************************************************************************/
+double get_model_param_test_on_symptoms_compliance(model *model)
+{
+    return model->params->test_on_symptoms_compliance;
+}
+
+/*****************************************************************************************
+*  Name:		get_model_param_test_on_traced_symptoms_compliance
+*  Description: Gets the value of an int parameter
+******************************************************************************************/
+double get_model_param_test_on_traced_symptoms_compliance(model *model)
+{
+    return model->params->test_on_traced_symptoms_compliance;
+}
+
+/*****************************************************************************************
+*  Name:		get_model_param_test_on_traced_positive_compliance
+*  Description: Gets the value of an int parameter
+******************************************************************************************/
+double get_model_param_test_on_traced_positive_compliance(model *model)
+{
+    return model->params->test_on_traced_positive_compliance;
+}
+
+/*****************************************************************************************
+*  Name:		get_model_param_quarantine_compliance_positive
+*  Description: Gets the value of an int parameter
+******************************************************************************************/
+double get_model_param_quarantine_compliance_positive(model *model)
+{
+    return model->params->quarantine_compliance_positive;
 }
 
 /*****************************************************************************************
@@ -731,6 +763,46 @@ int set_model_param_quarantine_days(model *model, int value )
 int set_model_param_self_quarantine_fraction(model *model, double value)
 {
     model->params->self_quarantine_fraction = value;
+    return TRUE;
+}
+
+/*****************************************************************************************
+*  Name:        set_model_param_test_on_symptoms_compliance
+*  Description: Sets the value of parameter
+******************************************************************************************/
+int set_model_param_test_on_symptoms_compliance(model *model, double value)
+{
+    model->params->test_on_symptoms_compliance = value;
+    return TRUE;
+}
+
+/*****************************************************************************************
+*  Name:        set_model_param_test_on_traced_symptoms_compliance
+*  Description: Sets the value of parameter
+******************************************************************************************/
+int set_model_param_test_on_traced_symptoms_compliance(model *model, double value)
+{
+    model->params->test_on_traced_symptoms_compliance = value;
+    return TRUE;
+}
+
+/*****************************************************************************************
+*  Name:        set_model_param_test_on_traced_positive_compliance
+*  Description: Sets the value of parameter
+******************************************************************************************/
+int set_model_param_test_on_traced_positive_compliance(model *model, double value)
+{
+    model->params->test_on_traced_positive_compliance = value;
+    return TRUE;
+}
+
+/*****************************************************************************************
+*  Name:        set_model_param_quarantine_compliance_positive
+*  Description: Sets the value of parameter
+******************************************************************************************/
+int set_model_param_quarantine_compliance_positive(model *model, double value)
+{
+    model->params->quarantine_compliance_positive = value;
     return TRUE;
 }
 
@@ -1463,15 +1535,20 @@ void check_hospital_params( parameters *params )
         print_exit( "BAD PARAM hcw_mean_work_interactions must be less than or equal to half the total number of healthcare workers" );
 }
 
+/*****************************************************************************************
+*  Name:        destroy_occupation_network_table
+*  Description: Destroy the occupation network table
+******************************************************************************************/
 void destroy_occupation_network_table(parameters *params)
 {
     for (int i = 0; i != params->occupation_network_table->n_networks; ++i)
         free(params->occupation_network_table->network_names[i]);
     free(params->occupation_network_table->network_names);
-    free(params->occupation_network_table->network_ids);
     free(params->occupation_network_table->mean_interactions);
     free(params->occupation_network_table->age_type);
     free(params->occupation_network_table->network_no);
+    free(params->occupation_network_table->lockdown_occupation_multipliers);
+    free(params->occupation_network_table);
 }
 
 /*****************************************************************************************
@@ -1490,9 +1567,11 @@ void destroy_params( parameters *params )
 		free( params->demo_house->age_group );
 		free( params->demo_house->house_no );
 		free( params->demo_house->idx );
+		free( params->demo_house );
 	}
 
 	if ( params->occupation_network_table != NULL )
 	    destroy_occupation_network_table(params);
 
+	free( params );
 }
